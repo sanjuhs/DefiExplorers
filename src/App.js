@@ -1,7 +1,10 @@
-import logo from "./logo.svg";
+import { useState } from "react";
 import "./App.css";
 import React from "react";
 import Unity, { UnityContext } from "react-unity-webgl";
+import Dashboard from "./Dashboard";
+
+
 
 const unityContext = new UnityContext({
   loaderUrl: "/build/build5.loader.js",
@@ -10,44 +13,36 @@ const unityContext = new UnityContext({
   codeUrl: "/build/build5.wasm.unityweb",
 });
 
-// var buildUrl = "Build";
-//       var loaderUrl = buildUrl + "/build1.loader.js";
-//       var config = {
-//         dataUrl: buildUrl + "/build1.data.gz",
-//         frameworkUrl: buildUrl + "/build1.framework.js.gz",
-//         codeUrl: buildUrl + "/build1.wasm.gz",
-//         streamingAssetsUrl: "StreamingAssets",
-//         companyName: "DefaultCompany",
-//         productName: "2dRPG_1_test",
-//         productVersion: "1.0",
-//         showBanner: unityShowBanner,
-//       };
-// this is a test only yeah its tru terminal ?
+
+
 
 function App() {
+
+  const [showDashboard,changeShowDashboard] = useState(false);
+
+
+  const showTheDashboard = () => changeShowDashboard(true);
+
+  const closeDashboard = () => changeShowDashboard(false)
+
   unityContext.on("Senddata", function (eventdata, eventname) {
     alert("this is true !");
     console.log("eventdata : " + String(eventdata));
     console.log(eventname);
+    changeShowDashboard(true);
   });
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React with this app
-        </a>
-        <Unity unityContext={unityContext} id="unityg" />
-      </header>
+    <div className="relative">
+        <Unity unityContext={unityContext}/>
+        <div onClick={showTheDashboard}
+        className="w-12 h-12 absolute top-9 left-4 bg-white border-black rounded-xl cursor-pointer"></div>
+        <div className="w-12 h-12 absolute top-24 left-4 bg-white border-black rounded-xl cursor-pointer"></div>
+        {/* <div className="w-12 h-12 absolute top-40 left-4 bg-white border-black rounded-xl cursor-pointer"></div> */}
+        <button className="max-w-sm absolute top-9 bg-[#00b8d5] right-4 rounded-xl py-2 px-6 text-[#0067d5] font-bold">Inventory</button>
+        {
+          showDashboard && <Dashboard closeDashboardHandler={closeDashboard}/>
+        }
     </div>
   );
 }
