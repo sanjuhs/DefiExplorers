@@ -25,6 +25,12 @@ const unityContext = new UnityContext({
 // this is a test only yeah its tru terminal ?
 
 function App() {
+  unityContext.on("Senddata", function (eventdata, eventname) {
+    alert("this is true !");
+    console.log("eventdata : " + String(eventdata));
+    console.log(eventname);
+  });
+
   return (
     <div className="App">
       <header className="App-header">
