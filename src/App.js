@@ -3,6 +3,7 @@ import "./App.css";
 import React from "react";
 import Unity, { UnityContext } from "react-unity-webgl";
 import Dashboard from "./Dashboard";
+import Learning from "./Learning";
 
 const unityContext = new UnityContext({
   loaderUrl: "/build/build5.loader.js",
@@ -17,10 +18,15 @@ function App() {
   }
 
   const [showDashboard, changeShowDashboard] = useState(false);
+  const [showLearning, changeShowLearning] = useState(false);
 
   const showTheDashboard = () => changeShowDashboard(true);
 
   const closeDashboard = () => changeShowDashboard(false);
+
+  const showTheLearning = () => changeShowLearning(true);
+
+  const closeTheLearning = () => changeShowLearning(false);
 
   unityContext.on("Senddata", function (eventdata, eventname) {
     alert("this is true !");
@@ -38,7 +44,7 @@ function App() {
         className="w-12 h-12 absolute top-9 left-4 bg-white border-black rounded-xl cursor-pointer"
       ></div>
       <div
-        onClick={questcompletion}
+        onClick={showTheLearning}
         className="w-12 h-12 absolute top-24 left-4 bg-white border-black rounded-xl cursor-pointer"
       ></div>
       {/* <div className="w-12 h-12 absolute top-40 left-4 bg-white border-black rounded-xl cursor-pointer"></div> */}
@@ -46,6 +52,7 @@ function App() {
         Inventory
       </button>
       {showDashboard && <Dashboard closeDashboardHandler={closeDashboard} />}
+      {showLearning && <Learning closeLearningHandler={closeTheLearning}/>}
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import axios from 'axios';
 
 import CoinbaseWalletSDK from "@coinbase/wallet-sdk";
 import WalletConnect from "@walletconnect/web3-provider";
@@ -7,7 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import Web3Modal from "web3modal";
 
 import { ethers } from 'ethers';
-import { walletLogin } from './reducers/user';
+import { updateAave, updateUniswapV1, walletLogin } from './reducers/user';
 
 
 
@@ -17,19 +18,21 @@ function Dashboard({ closeDashboardHandler }) {
 
     const isConnected = useSelector((state) => state.user.loggedIn);
     const address = useSelector((state) => state.user.address);
+    const aave = useSelector((state) => state.user.aave);
+    const uniswap = useSelector((state) => state.user.uniswap);
 
     const providerOptions = {
         coinbasewallet: {
             package: CoinbaseWalletSDK,
             options: {
                 appName: "Web 3 Modal Demo",
-                infuraId: process.env.INFURA_KEY
+                infuraId: process.env.REACT_APP_INFURA_KEY
             }
         },
         walletconnect: {
             package: WalletConnect,
             options: {
-                infuraId: process.env.INFURA_KEY
+                infuraId: process.env.REACT_APP_INFURA_KEY
             }
         }
     };
@@ -44,8 +47,51 @@ function Dashboard({ closeDashboardHandler }) {
     const [account, setAccount] = useState();
     const [network, setNetwork] = useState();
 
+    const addAave = async (address) => {
+        try {
+            const res = await axios.get(`https://api.covalenthq.com/v1/1/address/0x57f139225c3193854C67d435aC3482373176bA1F/stacks/aave_v2/balances/?&key=${process.env.REACT_APP_ckey}`);
+            if (res.data.data.aave.balances.length > 0) {
+                const aavebalance = res.data.data.aave.balances[0].balance.quote;
+                console.log(aavebalance);
+                dispatch(updateAave(aavebalance))
+            }
+
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    const adduniswapv1 = async (address) => {
+        try {
+            const res = await axios.get(`https://api.covalenthq.com/v1/1/address/0x57f139225c3193854C67d435aC3482373176bA1F/stacks/uniswap_v1/balances/?&key=${process.env.REACT_APP_ckey}`);
+            if (res.data.data.uniswap_v1.balances.length > 0) {
+                const uniswapbalance = res.data.data.uniswap_v1.balances[0].balance.quote;
+                console.log(uniswapbalance);
+                dispatch(updateUniswapV1(uniswapbalance))
+            }
+
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    const addCompound = async(address) => {
+        try {
+            const res = await axios.get(`https://api.covalenthq.com/v1/1/address/0x57f139225c3193854C67d435aC3482373176bA1F/stacks/compound/balances/?&key=${process.env.REACT_APP_ckey}`);
+            if (res.data.data.compound.length > 0) {
+                const compoundbalance = res.data.data.compound.balances[0].balance.quote;
+                console.log(compoundbalance);
+                dispatch(updateUniswapV1(compoundbalance))
+            }
+
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
     const connectMyWallet = async () => {
         try {
+            closeDashboardHandler();
             const provider = await web3Modal.connect();
             const library = new ethers.providers.Web3Provider(provider);
             const accounts = await library.listAccounts();
@@ -60,6 +106,18 @@ function Dashboard({ closeDashboardHandler }) {
 
             console.log(accounts);
             setNetwork(network);
+
+            //add aave position
+            addAave(accounts[0]);
+
+            //add uniswap1 position
+            adduniswapv1(accounts[0]);
+
+            //add compound positions
+            addCompound(accounts[0]);
+
+            
+
         } catch (error) {
             console.error(error);
         }
@@ -78,7 +136,7 @@ function Dashboard({ closeDashboardHandler }) {
                     ]
                 })
 
-                
+
 
 
                 //connect wallet
@@ -86,7 +144,7 @@ function Dashboard({ closeDashboardHandler }) {
                     method: "eth_requestAccounts",
                 });
                 console.log(result);
-               
+
 
                 dispatch(walletLogin(result[0]));
 
@@ -123,18 +181,41 @@ function Dashboard({ closeDashboardHandler }) {
             {
                 !isConnected ? (
                     <div className='flex flex-col justify-center items-center my-8'>
-                        <button
+                        {/* <button
                             className="max-w-sm top-9 bg-[#00b8d5] right-4 rounded-xl py-2 px-6 text-[#0067d5] font-bold my-4">Use Coinbase Wallet</button>
                         <button
-                            className="max-w-sm top-9 bg-[#00b8d5] right-4 rounded-xl py-2 px-6 text-[#0067d5] font-bold my-4">Use WalletConnect</button>
+                            className="max-w-sm top-9 bg-[#00b8d5] right-4 rounded-xl py-2 px-6 text-[#0067d5] font-bold my-4">Use WalletConnect</button> */}
                         <button onClick={connectMyWallet}
-                            className="max-w-sm top-9 bg-[#00b8d5] right-4 rounded-xl py-2 px-6 text-[#0067d5] font-bold my-4">Use Metamask</button>
+                            className="max-w-sm top-9 bg-[#00b8d5] right-4 rounded-xl py-2 px-6 text-[#0067d5] font-bold my-4">Connect My Web3 Wallet</button>
                     </div>
                 ) : (
                     <div className='px-4'>
-                        <h1 className='text-2xl font-bold mb-4'>Welcome, {address.substring(0, 10)}...</h1>
+                        <h1 className='text-2xl font-bold'>My Defi Assets</h1>
+                        <p className='text-slate-400 text-xs mb-4'>Address : {address}</p>
                         <hr />
-                        
+                        <div className='grid grid-cols-2 mt-12 gap-4'>
+                            <div className='rounded-xl px-4 py-4 bg-gray-100'>
+                                <h2 className='font-bold text-base'>Uniswap V1 </h2>
+                                <p className='text-sm'>$0</p>
+                            </div>
+
+                            <div className='rounded-xl px-4 py-4 bg-gray-100'>
+                                <h2 className='font-bold text-base'>Aave V2 Supply Position</h2>
+                                <p className='text-sm'>${aave}</p>
+                            </div>
+
+                            <div className='rounded-xl px-4 py-4 bg-gray-100'>
+                                <h2 className='font-bold text-base'>Compound</h2>
+                                <p className='text-sm'>$0</p>
+                            </div>
+
+                            <div className='rounded-xl px-4 py-4 bg-gray-100'>
+                                <h2 className='font-bold text-base'>Curve</h2>
+                                <p className='text-sm'>$0</p>
+                            </div>
+
+                        </div>
+
                     </div>
                 )
             }
