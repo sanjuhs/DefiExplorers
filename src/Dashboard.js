@@ -1,51 +1,69 @@
 import React, { useState } from 'react'
 
-// import CoinbaseWalletSDK from "@coinbase/wallet-sdk";
-// import WalletConnect from "@walletconnect/web3-provider";
+import CoinbaseWalletSDK from "@coinbase/wallet-sdk";
+import WalletConnect from "@walletconnect/web3-provider";
+import { useDispatch, useSelector } from 'react-redux';
 
-// import Web3Modal from "web3modal";
+import Web3Modal from "web3modal";
 
 import { ethers } from 'ethers';
+import { walletLogin } from './reducers/user';
 
-// const web3Modal = new Web3Modal({
-//     providerOptions // required
-// });
-
-// export const providerOptions = {
-//     coinbasewallet: {
-//         package: CoinbaseWalletSDK,
-//         options: {
-//             appName: "Web 3 Modal Demo",
-//             infuraId: process.env.INFURA_KEY
-//         }
-//     },
-//     walletconnect: {
-//         package: WalletConnect,
-//         options: {
-//             infuraId: process.env.INFURA_KEY
-//         }
-//     }
-// };
 
 
 function Dashboard({ closeDashboardHandler }) {
-    const [connected, connectWallet] = useState(false);
-    const [address, changeAddress] = useState('');
 
-    // const [provider, setProvider] = useState();
-    // const [library, setLibrary] = useState();
+    const dispatch = useDispatch();
 
-    const connectMyWallet = async () => {
-        // try {
-        //     const provider = await web3Modal.connect();
-        //     const library = new ethers.providers.Web3Provider(provider);
-        //     setProvider(provider);
-        //     setLibrary(library);
-        // } catch (error) {
-        //     console.error(error);
-        // }
+    const isConnected = useSelector((state) => state.user.loggedIn);
+    const address = useSelector((state) => state.user.address);
+
+    const providerOptions = {
+        coinbasewallet: {
+            package: CoinbaseWalletSDK,
+            options: {
+                appName: "Web 3 Modal Demo",
+                infuraId: process.env.INFURA_KEY
+            }
+        },
+        walletconnect: {
+            package: WalletConnect,
+            options: {
+                infuraId: process.env.INFURA_KEY
+            }
+        }
     };
 
+    const web3Modal = new Web3Modal({
+        providerOptions // required
+    });
+
+
+    const [provider, setProvider] = useState();
+    const [library, setLibrary] = useState();
+    const [account, setAccount] = useState();
+    const [network, setNetwork] = useState();
+
+    const connectMyWallet = async () => {
+        try {
+            const provider = await web3Modal.connect();
+            const library = new ethers.providers.Web3Provider(provider);
+            const accounts = await library.listAccounts();
+            const network = await library.getNetwork();
+            setProvider(provider);
+            setLibrary(library);
+
+            if (accounts) setAccount(accounts[0]);
+
+            //storing in redux
+            dispatch(walletLogin(accounts[0]));
+
+            console.log(accounts);
+            setNetwork(network);
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
     const connectMetamask = async () => {
         if (window.ethereum) {
@@ -60,14 +78,17 @@ function Dashboard({ closeDashboardHandler }) {
                     ]
                 })
 
+                
+
 
                 //connect wallet
                 const result = await window.ethereum.request({
                     method: "eth_requestAccounts",
                 });
                 console.log(result);
-                connectWallet(true);
-                changeAddress(result[0]);
+               
+
+                dispatch(walletLogin(result[0]));
 
             } catch (error) {
                 console.log(error.message);
@@ -100,19 +121,20 @@ function Dashboard({ closeDashboardHandler }) {
             <div onClick={closeDashboardHandler}
                 className='flex flex-row justify-end text-2xl cursor-pointer mx-1 my-1'>x</div>
             {
-                !connected ? (
+                !isConnected ? (
                     <div className='flex flex-col justify-center items-center my-8'>
                         <button
                             className="max-w-sm top-9 bg-[#00b8d5] right-4 rounded-xl py-2 px-6 text-[#0067d5] font-bold my-4">Use Coinbase Wallet</button>
                         <button
                             className="max-w-sm top-9 bg-[#00b8d5] right-4 rounded-xl py-2 px-6 text-[#0067d5] font-bold my-4">Use WalletConnect</button>
-                        <button onClick={connectMetamask}
+                        <button onClick={connectMyWallet}
                             className="max-w-sm top-9 bg-[#00b8d5] right-4 rounded-xl py-2 px-6 text-[#0067d5] font-bold my-4">Use Metamask</button>
                     </div>
                 ) : (
                     <div className='px-4'>
                         <h1 className='text-2xl font-bold mb-4'>Welcome, {address.substring(0, 10)}...</h1>
                         <hr />
+                        
                     </div>
                 )
             }
