@@ -5,6 +5,9 @@ const initialState = {
     address : null,
     balance : 0,
     loading: false,
+    aave:0,
+    uniswap:0,
+    compound:0,
     nfts:[],
     distribution: []
 }
@@ -22,6 +25,15 @@ export const userSlice = createSlice({
         updateBalance : (state,action) => {
             state.balance = action.payload;
         },
+        updateAave: (state,action) => {
+            state.aave = action.payload;
+        },
+        updateUniswapV1: (state,action) => {
+            state.uniswap = action.payload;
+        },
+        updateCompound: (state,action) => {
+            state.compound = action.payload;
+        },
         setLoading : (state) => {
             state.loading = true;
         },
@@ -37,6 +49,6 @@ export const userSlice = createSlice({
     }
 })
 
-export const {walletLogin, updateBalance, setLoading, unsetLoading, loadNFTs, addDistribution} = userSlice.actions;
+export const {walletLogin, updateBalance, setLoading, unsetLoading, loadNFTs, addDistribution, updateAave, updateUniswapV1, updateCompound} = userSlice.actions;
 
 export default userSlice.reducer;
