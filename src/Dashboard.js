@@ -180,13 +180,13 @@ function Dashboard({ closeDashboardHandler }) {
                 className='flex flex-row justify-end text-2xl cursor-pointer mx-1 my-1'>x</div>
             {
                 !isConnected ? (
-                    <div className='flex flex-col justify-center items-center my-8'>
+                    <div className='flex flex-col justify-center items-center my-32'>
                         {/* <button
                             className="max-w-sm top-9 bg-[#00b8d5] right-4 rounded-xl py-2 px-6 text-[#0067d5] font-bold my-4">Use Coinbase Wallet</button>
                         <button
                             className="max-w-sm top-9 bg-[#00b8d5] right-4 rounded-xl py-2 px-6 text-[#0067d5] font-bold my-4">Use WalletConnect</button> */}
                         <button onClick={connectMyWallet}
-                            className="max-w-sm top-9 bg-[#00b8d5] right-4 rounded-xl py-2 px-6 text-[#0067d5] font-bold my-4">Connect My Web3 Wallet</button>
+                            className="max-w-sm top-9 bg-[#e6e6e6] right-4 rounded-xl py-2 px-6 text-[#000] font-bold my-4">Connect My Web3 Wallet</button>
                     </div>
                 ) : (
                     <div className='px-4'>
